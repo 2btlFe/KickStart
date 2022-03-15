@@ -177,8 +177,8 @@ const int d8i[8]={-1, -1, 0, 1, 1, 1, 0, -1}, d8j[8]={0, 1, 1, 1, 0, -1, -1, -1}
 void solve() {
 	ll n, d, c, m;
 	read(n, d, c, m);
+	ll ans;
 	
-	print(ans?"YES":"NO");
 }
 
 int main() {
