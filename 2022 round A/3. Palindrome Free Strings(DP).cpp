@@ -186,20 +186,40 @@ bool isPal(string s) {
     return ret;
 }
 
+//내가 현재 마지막 idx면, 
+//idx가 4보다 작으면, 아직 조합을 만들지 못 했으므로, 선택을 유보한다 
+//?면, 2가지를 모두 해본다
+//지금 5개가 펠린드롬이 아님 && 다음 것까지 포함했을 때, 6개가 펠린드롬이 안 됨
 int isNotPal(int p, int idx) {
     //basecase
-    if(idx >= N) return 1;
-    
+    if(idx + 1 == N) return 1;
+
     //memoization
     int& ret = cache[p][idx];
     if(ret != -1) return ret;
     
     //recursion
     ret = 1;
-    if(S[idx + 1] == '?') {
+    if(idx < 4) {
+       if(S[idx + 1] == '?') {
+           ret = isNotPal(((p << 2) + 1)%32, idx + 1) || isNotPal((p << 2)%32, idx + 1);
+       } else {
+           ret = isNotPal((p<<2) + int(S[idx+1] == 1) , idx+1)
+       }
+       
+       
+       
+       
+       
+       
+       
+       
+       
+    } else if(S[idx + 1] == '?') {
         
     } else if(S[idx + 1] == '0') {
-        
+        string cand = !isPal() && isNotPal();
+        ret = isPal()
         
         
     } else if(S[idx + 1] == '1') {
