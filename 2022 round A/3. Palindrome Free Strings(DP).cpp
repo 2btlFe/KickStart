@@ -174,73 +174,88 @@ const int d8[8][2] = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}, {-1, -1}, {-1, 1}, {1, -
 string S;
 int N;
 int cache[32][50001];
+int palCache5[32];
+int palCache6[64];
 
-bool isPal(string s) {
+int isNotPal5(int state) {
+    //memoization
+    int& ret = palCache5[state]; 
+    if(ret != -1) return ret;
+    
+    //while
+    string s;
+    for(int i = 0; i < 5; i++) {
+        s += to_string(state%2);
+        state /= 2;
+    }
     int l = 0;
     int r = s.size() - 1;
-    bool ret = true;
     while(l < r) {
-        if(s[l] != s[r]) ret = false;
+        if(s[l] != s[r]) ret = true;
         l++; r--;
     }
     return ret;
 }
 
-//내가 현재 마지막 idx면, 
-//idx가 4보다 작으면, 아직 조합을 만들지 못 했으므로, 선택을 유보한다 
-//?면, 2가지를 모두 해본다
-//지금 5개가 펠린드롬이 아님 && 다음 것까지 포함했을 때, 6개가 펠린드롬이 안 됨
-int isNotPal(int p, int idx) {
-    //basecase
-    if(idx + 1 == N) return 1;
-
+int isNotPal6(int state) {
     //memoization
-    int& ret = cache[p][idx];
+    int& ret = palCache6[state]; 
     if(ret != -1) return ret;
     
-    //recursion
-    ret = 1;
-    if(idx < 4) {
-       if(S[idx + 1] == '?') {
-           ret = isNotPal(((p << 2) + 1)%32, idx + 1) || isNotPal((p << 2)%32, idx + 1);
-       } else {
-           ret = isNotPal((p<<2) + int(S[idx+1] == 1) , idx+1)
-       }
-       
-       
-       
-       
-       
-       
-       
-       
-       
-    } else if(S[idx + 1] == '?') {
-        
-    } else if(S[idx + 1] == '0') {
-        string cand = !isPal() && isNotPal();
-        ret = isPal()
-        
-        
-    } else if(S[idx + 1] == '1') {
-        
+    //while
+    string s;
+    for(int i = 0; i < 6; i++) {
+        s += to_string(state%2);
+        state /= 2;
     }
-    
+    int l = 0;
+    int r = s.size() - 1;
+    while(l < r) {
+        if(s[l] != s[r]) ret = true;
+        l++; r--;
+    }
     return ret;
 }
 
-
-
+int noSubPal(int state, int idx) {
+    
+    int &ret = cache[state][idx];
+    if(ret != -1) return ret;
+    
+    ret = 0;
+    //idx가 4보다 작고, idx + 1이 존재하지 않는 경우
+    if(idx < 4 && idx + 1 >= N) {
+        ret |= 1;
+    }
+    //idx가 4보다 작고, idx + 1이 존재하는 경우
+    else if(idx < 4 && idx + 1 < N) {
+        if(S[idx + 1] != '0') ret |= noSubPal((state<<1+1)%32, idx + 1);
+        if(S[idx + 1] != '1') ret |= noSubPal((state<<1)%32, idx + 1);
+    }
+    //idx가 4보다 크고, idx + 1이 존재하지 않는 경우
+    else if(idx >= 4 && idx + 1 >= N) {
+        ret |= isNotPal5(state);
+    }
+    //idx가 4보다 크고, idx + 1이 존재하는 경우
+    else if(idx >= 4 && idx + 1 < N) {
+        if(S[idx + 1] != '0') ret |= isNotPal5(state) && isNotPal6(state<<1+1) && noSubPal((state<<1 + 1)%32, idx + 1);
+        if(S[idx + 1] != '1') ret |= isNotPal5(state) && isNotPal6(state<<1) && noSubPal((state<<1)%32, idx + 1);
+    }
+    return ret;
+}
 
 void solve() {
    read(N, S);
    memset(cache, -1, sizeof(cache));
+   memset(palCache5, -1, sizeof(cache));
+   memset(palCache6, -1, sizeof(cache));
    
    if(N < 5) {write("POSSIBLE"); return;}
-   
-   
-   
-   
+   else {
+       if(noSubPal(0, 0)) write("POSSIBLE");
+       else write("IMPOSSIBLE");
+   }
+   print();
 }
 
 int main() {
