@@ -4,7 +4,6 @@ using namespace std;
 #define ll long long
 #define ld long double
 #define ar array
-#define endl "\n"
 
 #include <ext/pb_ds/assoc_container.hpp>
 #include <ext/pb_ds/tree_policy.hpp>
@@ -14,8 +13,6 @@ template <typename T> using oset = tree<T, null_type, less<T>, rb_tree_tag, tree
 
 #define vt vector
 #define pb push_back
-#define pi pair<int, int> >;
-#define pl pair<ll, ll> >;
 #define all(c) (c).begin(), (c).end()
 #define sz(x) (int)(x).size()
 
@@ -28,6 +25,13 @@ template <typename T> using oset = tree<T, null_type, less<T>, rb_tree_tag, tree
 #define F_ORC(...) GET5(__VA_ARGS__, F_OR4, F_OR3, F_OR2, F_OR1)
 #define FOR(...) F_ORC(__VA_ARGS__)(__VA_ARGS__)
 #define EACH(x, a) for (auto& x: a)
+
+template<class T> bool umin(T& a, const T& b) {
+	return b<a?a=b, 1:0;
+}
+template<class T> bool umax(T& a, const T& b) { 
+	return a<b?a=b, 1:0;
+} 
 
 ll FIRSTTRUE(function<bool(ll)> f, ll lb, ll rb) {
 	while(lb<rb) {
@@ -44,8 +48,6 @@ ll LASTTRUE(function<bool(ll)> f, ll lb, ll rb) {
 	return lb;
 }
 
-
-/*read*/
 template<class A> void read(vt<A>& v);
 template<class A, size_t S> void read(ar<A, S>& a);
 template<class T> void read(T& x) {
@@ -69,9 +71,11 @@ template<class A> void read(vt<A>& x) {
 	EACH(a, x)
 		read(a);
 }
+template<class A, size_t S> void read(array<A, S>& x) {
+	EACH(a, x)
+		read(a);
+}
 
-
-/*to_string*/
 string to_string(char c) {
 	return string(1, c);
 }
@@ -109,7 +113,6 @@ template<class T> string to_string(T v) {
     return res;
 }
 
-/*write*/
 template<class A> void write(A x) {
 	cout << to_string(x);
 }
@@ -168,94 +171,33 @@ template<class T, class U> void vti(vt<T> &v, U x, size_t n, size_t m...) {
 		vti(a, x, m);
 }
 
-const int d4[4][2] = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}};
-const int d8[8][2] = {{0, -1}, {0, 1}, {1, 0}, {-1, 0}, {-1, -1}, {-1, 1}, {1, -1}, {1, 1}};
+const int d4i[4]={-1, 0, 1, 0}, d4j[4]={0, 1, 0, -1};
+const int d8i[8]={-1, -1, 0, 1, 1, 1, 0, -1}, d8j[8]={0, 1, 1, 1, 0, -1, -1, -1};
 
-string S;
-int N;
-int cache[32][50001];
-int palCache5[32];
-int palCache6[64];
-
-int isNotPal5(int state) {
-    //memoization
-    int& ret = palCache5[state]; 
-    if(ret != -1) return ret;
-    
-    //while
-    string s;
-    for(int i = 0; i < 5; i++) {
-        s += to_string(state%2);
-        state /= 2;
-    }
-    int l = 0;
-    int r = s.size() - 1;
-    while(l < r) {
-        if(s[l] != s[r]) ret = true;
-        l++; r--;
-    }
-    return ret;
-}
-
-int isNotPal6(int state) {
-    //memoization
-    int& ret = palCache6[state]; 
-    if(ret != -1) return ret;
-    
-    //while
-    string s;
-    for(int i = 0; i < 6; i++) {
-        s += to_string(state%2);
-        state /= 2;
-    }
-    int l = 0;
-    int r = s.size() - 1;
-    while(l < r) {
-        if(s[l] != s[r]) ret = true;
-        l++; r--;
-    }
-    return ret;
-}
-
-int noSubPal(int state, int idx) {
-    
-    int &ret = cache[state][idx];
-    if(ret != -1) return ret;
-    
-    ret = 0;
-    //idx가 4보다 작고, idx + 1이 존재하지 않는 경우
-    if(idx < 4 && idx + 1 >= N) {
-        ret |= 1;
-    }
-    //idx가 4보다 작고, idx + 1이 존재하는 경우
-    else if(idx < 4 && idx + 1 < N) {
-        if(S[idx + 1] != '0') ret |= noSubPal((state<<1+1)%32, idx + 1);
-        if(S[idx + 1] != '1') ret |= noSubPal((state<<1)%32, idx + 1);
-    }
-    //idx가 4보다 크고, idx + 1이 존재하지 않는 경우
-    else if(idx >= 4 && idx + 1 >= N) {
-        ret |= isNotPal5(state);
-    }
-    //idx가 4보다 크고, idx + 1이 존재하는 경우
-    else if(idx >= 4 && idx + 1 < N) {
-        if(S[idx + 1] != '0') ret |= isNotPal5(state) && isNotPal6(state<<1+1) && noSubPal((state<<1 + 1)%32, idx + 1);
-        if(S[idx + 1] != '1') ret |= isNotPal5(state) && isNotPal6(state<<1) && noSubPal((state<<1)%32, idx + 1);
-    }
-    return ret;
-}
+const int mxN=5e4;
+bool dp[mxN + 1][32];
 
 void solve() {
-   read(N, S);
-   memset(cache, -1, sizeof(cache));
-   memset(palCache5, -1, sizeof(cache));
-   memset(palCache6, -1, sizeof(cache));
-   
-   if(N < 5) {write("POSSIBLE"); return;}
-   else {
-       if(noSubPal(0, 0)) write("POSSIBLE");
-       else write("IMPOSSIBLE");
+   int n; string s;
+   read(n, s);
+   dp[0][0] = 1;
+   FOR(n) {
+       memset(dp[i+1], 0, sizeof(dp[i+1]));
+       FOR(k, 32) {
+           if(!dp[i][k]) continue;
+           for(int c : {0, 1}) {
+               if(s[i]-'0' == (c^1)) continue;
+               int nk = k<<1|c;
+               bool ok = (i<4||(nk>>0&1)!=(nk>>4&1)||(nk>>1&1)!=(nk>>3&1))&&(i<5||(nk>>0&1)!=(nk>>5&1)||(nk>>1&1)!=(nk>>4&1)||(nk>>2&1)!=(nk>>3&1));
+               if(ok) dp[i+1][nk&31]=1;
+                    
+           }
+       }
    }
-   print();
+   bool ans = 0;
+   FOR(32) 
+    ans|=dp[n][i];
+   print(ans?"POSSIBLE":"IMPOSSIBLE");
 }
 
 int main() {
